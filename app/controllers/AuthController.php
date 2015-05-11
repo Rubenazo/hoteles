@@ -25,7 +25,52 @@ class AuthController extends BaseController {
 	}
 	public function postRegister()
 	{
-		$inp = Input::all();
+		$inp 	= Input::all();
+		$rules 	=  array(
+			'username' 	=> 'required|unique:user',
+			'password'	=> 'required|min:6',
+			're_pass'	=> 'required|confirmed',
+			'name'		=> 'required',
+			'lastname'	=> 'required',
+			'email'		=> 'required|email|unique:user',
+			'dir'		=> 'required',
+			'phone'		=> 'required',
+			'sex'		=> 'required'
+
+		);
+		$msg  	= array(
+			'required' => 'Campo obligatorio.',
+			'min'	   => 'El campo debe ser mas largo.',
+			'unique'   => 'El :attribute ya existe.',
+			'email'	   => 'Debe introducir un email valido.',
+		);
+		$attr   = array(
+			'username'	=> 'Usuario',
+			'email'		=> 'Email'
+		);
+		$validator = Validator::make($inp, $rules, $msg, $attr);
+		if ($validator->fails()) {
+			return Redirect::back()->withErrors($validator)->withInput();
+		}
+
+		$user = new User;
+		$user->username = $inp['username'];
+		$user->password = Hash::make($inp['password']);
+		$user->name 	= $inp['name'];
+		$user->lastname = $inp['lastname'];
+		$user->email 	= $inp['email'];
+		$user->dir 		= $inp['dir'];
+		$user->phone 	= $inp['phone'];
+		$user->sex 		= $inp['sex'];
+
+		if ($user->save()) {
+			Session::flash('success','Usuario creado satisfactoriamente');
+			return Redirect::to('');
+		}else
+		{
+			Session::flash('danger','Error al crear al usuario');
+			return Redirect::back()->withInput();
+		}
 	}
 
 }
