@@ -17,19 +17,50 @@ class AuthController extends BaseController {
 
 	public function getLogin()
 	{
+		$user = array(
+  			'username' => Input::get('username'),
+  			'password' => Input::get('password')
+		);
 
+		if (Auth::attempt($user)) {
+			if (Auth::user()->role == 1)
+			{
+				return Redirect::to('client/home')->with('notice', 'Has iniciado sesion exitosamente');
+			}
+			if (Auth::user()->role == 2)
+			{
+				return Redirect::to('hotel/home')->with('notice', 'Has iniciado sesion exitosamente');
+			}
+			if (Auth::user()->role == 3)
+			{
+				return Redirect::to('admin/home')->with('notice', 'Has iniciado sesion exitosamente');
+			}
+		}
+		else {
+			return Redirect::to('/')->with('error', 'El usuario o contraseña es incorrecto')->withInput();
+		}	
 	}
+
+	public function getLogout()
+	{
+		Auth::logout();
+    	return Redirect::to('/')->with('notice', 'Su perfil se ha cerrado');
+	}
+
 	public function getRegister()
 	{
-		
+		$title = 'Nuevo Usuario';
+		return View::make('admins.newuser')
+		->with('title',$title);
 	}
+
 	public function postRegister()
 	{
 		$inp 	= Input::all();
 		$rules 	=  array(
 			'username' 	=> 'required|unique:user',
-			'password'	=> 'required|min:6',
-			're_pass'	=> 'required|confirmed',
+			'password'	=> 'required|min:6|confirmed',
+			'password_confirmation'	=> 'required',
 			'name'		=> 'required',
 			'lastname'	=> 'required',
 			'email'		=> 'required|email|unique:user',
@@ -62,10 +93,11 @@ class AuthController extends BaseController {
 		$user->dir 		= $inp['dir'];
 		$user->phone 	= $inp['phone'];
 		$user->sex 		= $inp['sex'];
+		$user->role     = 3;
 
 		if ($user->save()) {
 			Session::flash('success','Usuario creado satisfactoriamente');
-			return Redirect::to('');
+			return Redirect::to('admin/home');
 		}else
 		{
 			Session::flash('danger','Error al crear al usuario');

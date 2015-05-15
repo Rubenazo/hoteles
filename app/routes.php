@@ -13,5 +13,27 @@
 
 Route::get('/', function()
 {
-	return View::make('hello');
+	$title = 'Home';
+	return View::make('home')
+	->with('title',$title);
 });
+
+Route::post('login','AuthController@getLogin');
+
+Route::group(array('before' => 'auth'), function() {
+
+	Route::get('admin/home','AdminController@showHome');
+	Route::get('admin/newuser','AuthController@getRegister');
+	Route::post('admin/newusesr','AuthController@postRegister');
+	Route::get('admin/newhotel','AdminController@getHotel');
+	Route::post('admin/newhotel','AdminController@postHotel');
+
+	Route::get('client/home','UserController@showClientHome');
+
+	Route::get('hotel/home','UserController@showHotelHome');
+	Route::get('hotel/gallery','UserController@getGallery');
+	Route::post('hotel/gallery','UserController@postGallery');
+
+	Route::get('logout','AuthController@getLogout');
+});
+
